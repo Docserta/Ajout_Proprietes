@@ -1,0 +1,67 @@
+
+'c_LNomencl
+'Collection des infos d'une ligne de nomenclature
+
+Private mvarRef As String            'Référence de l'objet (Part Number)
+Private mvarComp As String           'Type de composant Ensemble("E") ou pièce("P")
+Private mvarQte As Long              'Quantité de composant
+Private mvarDesc As String           'Description du composant (description ref)
+Private mvarsource As String         'Source (Fabriqué ou Acheté)
+Private mvarAttributs As c_Attributs 'collection des attributs du composant
+Private mvarParent As String         'Nom de l'ensemble parent
+
+Public Property Let Ref(ByVal vData As String)
+    mvarRef = vData
+End Property
+
+Public Property Get Ref() As String
+    Ref = mvarRef
+End Property
+
+Public Property Let Comp(ByVal vData As String)
+    mvarComp = vData
+End Property
+
+Public Property Get Comp() As String
+    Comp = mvarComp
+End Property
+
+Public Property Let Qte(ByVal vData As Long)
+    mvarQte = vData
+End Property
+
+Public Property Get Qte() As Long
+    Qte = mvarQte
+End Property
+
+Public Property Let Source(ByVal vData As String)
+    mvarsource = vData
+End Property
+
+Property Get Source() As String
+    Source = mvarsource
+End Property
+
+Public Property Let Desc(ByVal vData As String)
+    mvarDesc = vData
+End Property
+
+Public Property Get Desc() As String
+    Desc = mvarDesc
+End Property
+
+Public Property Let Attributs(ByVal oData As c_Attributs)
+    Set mvarAttributs = oData
+End Property
+
+Public Property Get Attributs() As c_Attributs
+    Set Attributs = mvarAttributs
+End Property
+
+Public Property Let Parent(ByVal vData As String)
+    mvarParent = vData
+End Property
+
+Property Get Parent() As String
+    Parent = mvarParent
+End Property
