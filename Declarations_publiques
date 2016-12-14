@@ -2,7 +2,7 @@
 Public Declare Function GetUserName Lib "advapi32.dll" Alias "GetUserNameA" (ByVal lpBuffer As String, nSize As Long) As Long
 
 'Version de la macro
-Public Const VMacro As String = "Version 4.6 du 30/11/16"
+Public Const VMacro As String = "Version 4.6.3 du 14/12/16"
 Public Const nMacro As String = "Ajout_Proprietes"
 Public Const nPath As String = "\\srvxsiordo\xLogs\01_CatiaMacros"
 Public Const nFicLog As String = "logUtilMacro.txt"
