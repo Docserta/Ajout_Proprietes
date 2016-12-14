@@ -71,10 +71,18 @@ Dim oattribut As c_Attribut
     For Each mdoc In mdocs
         On Error Resume Next
         Set mprod = mdoc.Product
-        If mprod Is Nothing Then
+        If mprod Is Nothing Then 'Saute les doc parasites tel que les catalogues
             err.Clear
             On Error GoTo 0
         Else
+            'Ajoute le product en cours
+            Set oProduit = New c_Product
+                oProduit.Nom = mprod.PartNumber
+                oProduit.Produit = mprod
+                oProduit.Parent = mprod.PartNumber
+                oProduits.Add oProduit.Nom, oProduit.Produit, oProduit.Parent
+            Set oProduit = Nothing
+            'Ajoute les sous-products du product en cours
             For Each mprod In mdoc.Product.Products
                 Set oProduit = New c_Product
                 On Error Resume Next
