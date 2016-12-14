@@ -1,0 +1,60 @@
+'c_LNomencls
+'Collection des lignes de nomenclature
+
+Private mcol As Collection
+
+Public Function Add(Ref As String, _
+            Optional Comp As String = "", _
+            Optional Qte As Long = 0, _
+            Optional Source As String = "", _
+            Optional Desc As String = "", _
+            Optional Attributs As c_Attributs = Nothing, _
+            Optional Parent As String) As c_LNomencl
+    
+    Dim objNewMember As c_LNomencl
+    Set objNewMember = New c_LNomencl
+    
+    objNewMember.Ref = Ref
+    objNewMember.Comp = Comp
+    objNewMember.Qte = Qte
+    objNewMember.Source = Source
+    objNewMember.Desc = Desc
+    objNewMember.Attributs = Attributs
+    objNewMember.Parent = Parent
+
+    mcol.Add objNewMember, Ref
+
+    Set Add = objNewMember
+    Set objNewMember = Nothing
+
+End Function
+
+Public Property Get Item(vntIndexKey As Variant) As c_LNomencl
+  Set Item = mcol(vntIndexKey)
+End Property
+
+Public Property Get Count() As Long
+    Count = mcol.Count
+End Property
+
+Public Property Get Items() As Collection
+    Set Items = mcol
+End Property
+
+Public Sub Remove(vntIndexKey As Variant)
+    mcol.Remove vntIndexKey
+End Sub
+
+Private Sub Class_initialize()
+    Set mcol = New Collection
+End Sub
+
+Private Sub Class_Terminate()
+    Set mcol = Nothing
+End Sub
+
+
+
+
+
+
