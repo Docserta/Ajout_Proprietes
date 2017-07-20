@@ -1,12 +1,21 @@
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "c_LignomOrdo"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
 
-'c_LNomencl
+'c_LignomOrdo
 'Collection des infos d'une ligne de nomenclature
+'Avec les Parent pour lier les sous ensembles
 
-Private mvarRef As String            'R√©f√©rence de l'objet (Part Number)
-Private mvarComp As String           'Type de composant Ensemble("E") ou pi√®ce("P")
-Private mvarQte As Long              'Quantit√© de composant
+Private mvarRef As String            'RÈfÈrence de l'objet (Part Number)
+Private mvarComp As String           'Type de composant Ensemble("E") ou piËce("P")
+Private mvarQte As Long              'QuantitÈ de composant
 Private mvarDesc As String           'Description du composant (description ref)
-Private mvarsource As String         'Source (Fabriqu√© ou Achet√©)
 Private mvarAttributs As c_Attributs 'collection des attributs du composant
 Private mvarParent As String         'Nom de l'ensemble parent
 

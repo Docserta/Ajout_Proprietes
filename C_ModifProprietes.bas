@@ -1,12 +1,14 @@
+Attribute VB_Name = "C_ModifProprietes"
 Option Explicit
 
-Sub catmain()
+Sub CATMain()
 ' *****************************************************************
-' * Remonte les infos du fichier excel modifiÃ© par l'utilisateur
-' * et met Ã  jour les attributs des parts et products
+' * Remonte les infos du fichier excel modifié par l'utilisateur
+' * et met à jour les attributs des parts et products
 ' *
-' * CrÃ©ation CFR le 21/10/2016
-' * modification le :
+' * Création CFR le 21/10/2016
+' * modification le : 27/03/17
+' *                 Ajout d'un fonction SupZero supprimant les zéro non significatifs des part Number
 ' *
 ' *****************************************************************
 
@@ -42,8 +44,8 @@ Dim oattribut As c_Attribut
 
 'Chargement du formulaire
     Load FRM_SelFic
-    FRM_SelFic.Lbl_TypFicNom = "SÃ©lectionnez le fichier des attributs modifiÃ©es"
-    FRM_SelFic.Lbl_NomFicNom = "Nom du fichier des attributs modifiÃ©es"
+    FRM_SelFic.Lbl_TypFicNom = "Sélectionnez le fichier des attributs modifiées"
+    FRM_SelFic.Lbl_NomFicNom = "Nom du fichier des attributs modifiées"
     FRM_SelFic.Show
     'Bouton "annuler" choisi, on decharge le formulaire et on quite
     If FRM_SelFic.CB_Annule Then
@@ -55,7 +57,7 @@ Dim oattribut As c_Attribut
     
 'Chargement de la barre de progression
     Set mbarre = New ProgressBarre
-    mbarre.Titre = "Import des valeurs modifiÃ¨es des paramÃ¨tres"
+    mbarre.Titre = "Import des valeurs modifièes des paramètres"
     mbarre.Progression = 1
     mbarre.Affiche
     pNbEt = 3: pEtape = 1: pItem = 1: pItems = 1
@@ -63,11 +65,10 @@ Dim oattribut As c_Attribut
 'Chargement en mode conception
     mdoc.Product.ApplyWorkMode DESIGN_MODE
     
-'Collecte de la valeur des attrinuts dans le fichier eXcel
+'Collecte de la valeur des attributs dans le fichier eXcel
     Set oLigNoms = GetBomXl(cibleNomCatia, mbarre)
 
-'Mise Ã  jour des attributs dans les products et les parts
-    'Collecte des Produits (les groupes sont des produits mais ne font pas parti de la collection des Documents)
+'Collecte des Produits (les groupes sont des produits mais ne font pas parti de la collection des Documents)
     For Each mdoc In mdocs
         On Error Resume Next
         Set mprod = mdoc.Product
@@ -86,7 +87,7 @@ Dim oattribut As c_Attribut
             For Each mprod In mdoc.Product.Products
                 Set oProduit = New c_Product
                 On Error Resume Next
-                Set oProduit = oProduits.Item(mprod.PartNumber) 'Recherche si le produit est dÃ©ja prÃ©sent dans la collection (evite les doublons)
+                Set oProduit = oProduits.Item(mprod.PartNumber) 'Recherche si le produit est déja présent dans la collection (evite les doublons)
                 If err.Number <> 0 Then
                     oProduit.Nom = mprod.PartNumber
                     oProduit.Produit = mprod
@@ -100,28 +101,33 @@ Dim oattribut As c_Attribut
     
     pEtape = 3: pItem = 1: pItems = oProduits.Count
     
-    'Ajoute les attributs
+    
+'Mise à jour des attributs dans les products et les parts
     Set oProduit = New c_Product
     For Each oProduit In oProduits.Items
-        mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "Mise Ã  jour des attributs dans les products et les parts"
+        mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "Mise à jour des attributs dans les products et les parts"
         On Error Resume Next
         Set mparams = oProduit.Produit.ReferenceProduct.UserRefProperties
         If Not (mparams Is Nothing) Then
             On Error Resume Next
             
-            Set oLigNom = oLigNoms.Item(oProduit.Nom)
-                If err.Number = 0 Then 'si le composants catia n'est pas rÃ©fÃ©rencÃ© dans la nomenclature
+            Set oLigNom = oLigNoms.Item(SupZero(oProduit.Nom))
+                If err.Number = 0 Then 'si le composants catia n'est pas référencé dans la nomenclature
                     Set oAttributs = oLigNom.Attributs
-                    
+                    'traitement du paramètre "Revision"
+                    oProduit.Produit.Revision = oLigNom.Rev
+                    'traitement du paramètre "Definition"
+                    oProduit.Produit.Definition = oLigNom.Def
+                    'traitement du paramètre "Nomenclature"
+                    oProduit.Produit.Nomenclature = oLigNom.Nom
+                     'traitement du paramètre "source"
+                    oProduit.Produit.Source = ReverseSource(oLigNom.Source)
+                    'traitement du paramètre "DescriptionRef"
+                    oProduit.Produit.DescriptionRef = oLigNom.Desc
+                    'Les attributs personalisés
                     For Each oattribut In oAttributs.Items
-                        Select Case oattribut.Nom
-                            Case nDesc 'traitement du paramÃ¨tre "DescriptionRef"
-                                oProduit.Produit.DescriptionRef = oattribut.Valeur
-                            Case nQt, nRef, nSrce 'On saute les paramÃ¨tres non modifiables
-                            Case Else
-                            'CrÃ©ation D 'un paramÃ¨tre vide s'il n'existe pas dÃ©jÃ 
-                            CreateParamExist mparams, oattribut.Nom, oattribut.Valeur
-                        End Select
+                        'Création D 'un paramètre vide s'il n'existe pas déjà
+                        CreateParamExist mparams, oattribut.Nom, oattribut.Valeur
                     Next
                 End If
         Else
@@ -132,9 +138,9 @@ Dim oattribut As c_Attribut
     pItem = pItem + 1
     mbarre.Cache
 
-MsgBox "Import de attributs terminÃ©", vbInformation, "Fin d'import"
+MsgBox "Import de attributs terminé", vbInformation, "Fin d'import"
 
-'LibÃ©ration des classes
+'Libération des classes
 Set mbarre = Nothing
 
 End Sub
@@ -147,11 +153,11 @@ Dim objexcel
 Dim objWBk
 Dim LigActive As Long
 Dim ColActive As Integer
-Dim NoLigEntete As Long 'NÂ° de la ligne des entÃ¨te d'attributs dans le fichier eXcel
-Dim NoLigFinNom As Long 'NÂ° de la ligne de fin de la nomenclature
-Dim NoLigFinEns As Long 'NÂ° de la ligne de fin des ensembles
-Dim NoLigDebDet As Long 'NÂ° de la ligne de dÃ©but des piÃ¨ces
-Dim NoLigDebSSE As Long 'NÂ° de la ligne de dÃ©but des ensembles
+Dim NoLigEntete As Long 'N° de la ligne des entète d'attributs dans le fichier eXcel
+Dim NoLigFinNom As Long 'N° de la ligne de fin de la nomenclature
+Dim NoLigFinEns As Long 'N° de la ligne de fin des ensembles
+Dim NoLigDebDet As Long 'N° de la ligne de début des pièces
+Dim NoLigDebSSE As Long 'N° de la ligne de début des ensembles
 Dim oLigNom As c_LNomencl
 Dim oLigNoms As c_LNomencls
 Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
@@ -164,11 +170,11 @@ Dim oAttributEnvs As c_Attributs
     Set objexcel = CreateObject("EXCEL.APPLICATION")
     Set objWBk = objexcel.Workbooks.Open(CStr(cibleNomCatia))
     objexcel.Visible = False
-    'DÃ©tection de l'onglet "recapitulatif"
+    'Détection de l'onglet "recapitulatif"
     On Error Resume Next
     objWBk.Sheets(nSheetReacp).Activate
     If err.Number <> 0 Then
-        MsgBox "L'onglet " & nSheetReacp & " n'a pas Ã©tÃ© trouvÃ© dans le fichier Excel", vbCritical, "Fichier incorrect"
+        MsgBox "L'onglet " & nSheetReacp & " n'a pas été trouvé dans le fichier Excel", vbCritical, "Fichier incorrect"
         err.Clear
         GoTo erreur
     End If
@@ -188,9 +194,11 @@ Dim oAttributEnvs As c_Attributs
     Set oattribut = New c_Attribut
     Set oAttributs = New c_Attributs
 
-'Collecte de la liste des attributs (cellules de la ligne d'entÃ¨te de la nomenclature)
-    ColActive = NbColPrmStd + 1 'On saute les champs "Qte" , "RÃ©fÃ©rence" et "source"
-                                'on conserve les champs "product description" car il est modifiable
+'Collecte de la liste des attributs dans les cellules de la ligne d'entète de la nomenclature
+    'Collecte les attributs standards (présent sur tous les pats et products
+        'Révision, Definition, Nomenclature, source et product description)
+            'puis les attributs personalisés (ceux du fichier texte des propriètes)
+    ColActive = NbColPrmStd + 1 'On saute les champs Qte, Référence qui ne sont pas modifiables
     While objWBk.ActiveSheet.cells(NoLigEntete, ColActive) <> ""
         oAttributEnv.Nom = objWBk.ActiveSheet.cells(NoLigEntete, ColActive)
         oAttributEnvs.Add oAttributEnv.Nom, False
@@ -203,14 +211,26 @@ Dim oAttributEnvs As c_Attributs
     While LigActive < NoLigFinEns
         mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "Collecte de la valeur des attributs des ensembles"
         Set oAttributs = New c_Attributs
-        ColActive = 2
-        oLigNom.Ref = objWBk.ActiveSheet.cells(LigActive, ColActive)
+        ColActive = NbColPrmNomModif  'On saute le champs "Qte" qui n'est pas modifiable
+        oLigNom.Ref = objWBk.ActiveSheet.cells(LigActive, ColActive) 'on garde le champs ref qui sert d'index
         oLigNom.Comp = "E"
         ColActive = ColActive + 1
-        oLigNom.Source = FormatSource(objWBk.ActiveSheet.cells(LigActive, ColActive))
+        ' Révision
+        oLigNom.Rev = objWBk.ActiveSheet.cells(LigActive, ColActive)
         ColActive = ColActive + 1
+        ' Definition
+        oLigNom.Def = objWBk.ActiveSheet.cells(LigActive, ColActive)
+        ColActive = ColActive + 1
+        ' Nomenclature
+        oLigNom.Nom = objWBk.ActiveSheet.cells(LigActive, ColActive)
+        ColActive = ColActive + 1
+        ' source
+        oLigNom.Source = objWBk.ActiveSheet.cells(LigActive, ColActive) 'FormatSource(objWBk.ActiveSheet.cells(LigActive, ColActive))
+        ColActive = ColActive + 1
+        ' product description
         oLigNom.Desc = objWBk.ActiveSheet.cells(LigActive, ColActive)
-        ColActive = NbColPrmStd + 1 'On saute les champs "Qte" , "RÃ©fÃ©rence" et "source", on conserve "product description'
+        ' Les attributs personalisables
+        ColActive = NbColPrmStd + 1
         For Each oAttributEnv In oAttributEnvs.Items
             oattribut.Nom = oAttributEnv.Nom
             oattribut.Valeur = objWBk.ActiveSheet.cells(LigActive, ColActive)
@@ -220,24 +240,36 @@ Dim oAttributEnvs As c_Attributs
         LigActive = LigActive + 1
         oLigNom.Attributs = oAttributs
         Set oAttributs = Nothing
-        oLigNoms.Add oLigNom.Ref, oLigNom.Comp, oLigNom.Qte, oLigNom.Source, oLigNom.Desc, oLigNom.Attributs
+        oLigNoms.Add oLigNom.Ref, oLigNom.Comp, oLigNom.Qte, oLigNom.Rev, oLigNom.Def, oLigNom.Nom, oLigNom.Source, oLigNom.Desc, oLigNom.Attributs
         pItem = pItem + 1
     Wend
     
-'collecte de la valeur des attributs des piÃ¨ces
+'collecte de la valeur des attributs des pièces
     LigActive = NoLigDebDet
     pEtape = 2: pItem = 1: pItems = NoLigFinNom - LigActive
     While LigActive < NoLigFinNom
-        mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "collecte de la valeur des attributs des piÃ¨ces"
+        mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "collecte de la valeur des attributs des pièces"
         Set oAttributs = New c_Attributs
-        ColActive = 2
-        oLigNom.Ref = objWBk.ActiveSheet.cells(LigActive, ColActive)
+        ColActive = NbColPrmNomModif 'On saute le champs "Qte" qui n'est pas modifiable
+        oLigNom.Ref = objWBk.ActiveSheet.cells(LigActive, ColActive) 'on garde le champs ref qui sert d'index
         oLigNom.Comp = "D"
         ColActive = ColActive + 1
-        oLigNom.Source = FormatSource(objWBk.ActiveSheet.cells(LigActive, ColActive))
+        ' Révision
+        oLigNom.Rev = objWBk.ActiveSheet.cells(LigActive, ColActive)
         ColActive = ColActive + 1
+        ' Definition
+        oLigNom.Def = objWBk.ActiveSheet.cells(LigActive, ColActive)
+        ColActive = ColActive + 1
+        ' Nomenclature
+        oLigNom.Nom = objWBk.ActiveSheet.cells(LigActive, ColActive)
+        ColActive = ColActive + 1
+        ' source
+        oLigNom.Source = objWBk.ActiveSheet.cells(LigActive, ColActive) 'FormatSource(objWBk.ActiveSheet.cells(LigActive, ColActive))
+        ColActive = ColActive + 1
+        ' product description
         oLigNom.Desc = objWBk.ActiveSheet.cells(LigActive, ColActive)
-        ColActive = NbColPrmStd + 1 'On saute les champs "Qte" , "RÃ©fÃ©rence" et "source", on conserve "product description'
+        ' Les attributs personalisables
+        ColActive = NbColPrmStd + 1
         For Each oAttributEnv In oAttributEnvs.Items
             oattribut.Nom = oAttributEnv.Nom
             oattribut.Valeur = objWBk.ActiveSheet.cells(LigActive, ColActive)
@@ -247,14 +279,14 @@ Dim oAttributEnvs As c_Attributs
         LigActive = LigActive + 1
         oLigNom.Attributs = oAttributs
         Set oAttributs = Nothing
-        oLigNoms.Add oLigNom.Ref, oLigNom.Comp, oLigNom.Qte, oLigNom.Desc, oLigNom.Source, oLigNom.Attributs
+        oLigNoms.Add oLigNom.Ref, oLigNom.Comp, oLigNom.Qte, oLigNom.Rev, oLigNom.Def, oLigNom.Nom, oLigNom.Source, oLigNom.Desc, oLigNom.Attributs
         pItem = pItem + 1
     Wend
 
 Set GetBomXl = oLigNoms
 
 erreur:
-'LibÃ©ration des classes
+'Libération des classes
     Set oLigNoms = Nothing
     Set oLigNom = Nothing
     Set oAttributEnv = Nothing

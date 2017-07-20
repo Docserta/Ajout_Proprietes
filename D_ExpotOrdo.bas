@@ -1,21 +1,23 @@
+Attribute VB_Name = "D_ExpotOrdo"
 Option Explicit
-Sub catmain()
+Sub CATMain()
 
 ' *****************************************************************
 ' * Export de la nomenclature dans le template Nomenclature
 ' * Lance une boite de dialogue permettant de choisir les attributs a ajouter
 ' *
-' * CrÃ©ation CFR le 21/10/2016
-' * modification le :
+' * Création CFR le 21/10/2016
+' * modification le : 20/12/2016
+' *                    Modification de la formule de Qt a cmd des pièce directement sous l'assemblage général
 ' *
 ' *****************************************************************
 
 'Log de l'utilisation de la macro
 LogUtilMacro nPath, nFicLog, nMacro, "D_ExpotOrdo", VMacro
 
-Dim oattribut As c_Attribut         'attribut personnalisÃ©
-Dim oAttributs As c_Attributs       'Collections des attributs personnalisÃ©s
-Dim olignomCatias As c_LignomOrdos    'Collection des lignes de nomenclature gÃ©nÃ©rÃ© par catia
+Dim oattribut As c_Attribut         'attribut personnalisé
+Dim oAttributs As c_Attributs       'Collections des attributs personnalisés
+Dim olignomCatias As c_LignomOrdos    'Collection des lignes de nomenclature généré par catia
 Dim mbarre As ProgressBarre
 Dim objexcel
 Dim objWBk
@@ -29,7 +31,7 @@ Dim ColActive As Integer
 
 'Chargement du formulaire
     Load FRM_SelFic
-    FRM_SelFic.Lbl_TypFicNom = "SÃ©lectionnez la nomenclature gÃ©nÃ©rÃ©e par Catia"
+    FRM_SelFic.Lbl_TypFicNom = "Sélectionnez la nomenclature générée par Catia"
     FRM_SelFic.Lbl_NomFicNom = "Nom du fichier de la nomenclature Catia"
     FRM_SelFic.Show
     'Bouton "annuler" choisi, on decharge le formulaire et on quite
@@ -75,7 +77,7 @@ MsgBox "Fin de l'export de la nomenclature ordo !", vbInformation, "Fin de trait
 erreur:
 
 fin:
-'LibÃ©ration des classes
+'Libération des classes
     Set mbarre = Nothing
     Set objexcel = Nothing
     Set olignomCatias = Nothing
@@ -83,8 +85,8 @@ fin:
 End Sub
 
 Private Function GetBomOrdoXl(objWBk, mbarre) As c_LignomOrdos
-'construit la liste des lignes de nomenclatures pour chaque sous ensemble avec le nom du parent de chaque Ã©lÃ©ment
-'Ouvre le fichier excel de la nomenclature gÃ©nÃ©rÃ©e par catia
+'construit la liste des lignes de nomenclatures pour chaque sous ensemble avec le nom du parent de chaque élément
+'Ouvre le fichier excel de la nomenclature générée par catia
 
 Dim LigActive As Long
 Dim ColActive As Integer
@@ -109,7 +111,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
     Set oattribut = New c_Attribut
     Set oAttributs = New c_Attributs
     
-    'collecte de la liste des propriÃ©tÃ©s spÃ©cifiques Ã  l'environnement (nom des attributs)
+    'collecte de la liste des propriétés spécifiques à l'environnement (nom des attributs)
     LigActive = 4
     ColActive = 4 'Saut des champs "Qte", "Part number", "source"
     While objWBk.ActiveSheet.cells(LigActive, ColActive).Value <> ""
@@ -121,7 +123,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
     
 'Collecte de la valeur des attributs de chaque ligne de nomenclature avec le nom de l'ensemble parent
     LigActive = NoLigEntete - 1
-    'Collecte de l'ensemble gÃ©nÃ©ral
+    'Collecte de l'ensemble général
     Set oLigNom = New c_LignomOrdo
     NomSSE = TestEstSSE(objWBk.ActiveSheet.cells(LigActive, 1).Value)
     NomSSE = suppZero(NomSSE)
@@ -131,8 +133,8 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
         pItem = pItem + 1
         mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "Collecte des infos dans la nomenclature Catia"
         nCellActive = objWBk.ActiveSheet.cells(LigActive, 1).Value
-        'Saute les lignes d'entÃ¨te et les lignes vides
-        If nCellActive = "" Or nCellActive = "QuantitÃ©" Then
+        'Saute les lignes d'entète et les lignes vides
+        If nCellActive = "" Or nCellActive = "Quantité" Then
             LigActive = LigActive + 1
         Else
             Set oLigNom = New c_LignomOrdo
@@ -141,7 +143,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
             If TestEstSSE(objWBk.ActiveSheet.cells(LigActive, 1).Value) <> "False" Then
                 NomSSE = TestEstSSE(objWBk.ActiveSheet.cells(LigActive, 1).Value)
                 LigActive = LigActive + 2 'Passage a la liste des composants du sous ensemble
-                'suppression des zÃ©ro non significatifs
+                'suppression des zéro non significatifs
                 NomSSE = suppZero(NomSSE)
                 oLigNom.Comp = "E"
             End If
@@ -154,7 +156,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
             ColActive = ColActive + 1
             oLigNom.Parent = NomSSE
             oLigNom.Comp = "D"
-            'Collecte des autres propriÃ©tÃ©s
+            'Collecte des autres propriétés
             For Each oAttributEnv In oAttributEnvs.Items
                 oattribut.Nom = oAttributEnv.Nom
                 oattribut.Valeur = objWBk.ActiveSheet.cells(LigActive, ColActive)
@@ -171,7 +173,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
         End If
     Wend
         
-    'Calcul des quantitÃ© des sous ensembles
+    'Calcul des quantité des sous ensembles
     LigActive = NoLigEntete - 1
     While LigActive < NoLigFinEns
         NomRef = TestEstSSE(objWBk.ActiveSheet.cells(LigActive, 1).Value)
@@ -203,7 +205,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
 Set GetBomOrdoXl = oLigNoms
 
 erreur:
-'LibÃ©ration des classes
+'Libération des classes
     Set oLigNoms = Nothing
     Set oLigNom = Nothing
     Set oattribut = Nothing
@@ -217,8 +219,8 @@ Public Sub PutNomOrdo(olignomCatias As c_LignomOrdos, mbarre)
 ' *****************************************************************
 ' * Export dans le template excel Ordo de la nomenclature dans C:\temp
 ' *
-' * CrÃ©ation CFR le 23/11/16
-' * DerniÃ¨re modification le :
+' * Création CFR le 23/11/16
+' * Dernière modification le :
 ' *****************************************************************
 
 Dim objExcelNomOrdo
@@ -248,7 +250,7 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
     objExcelNomOrdo.Visible = True
     objWBkOrdo.ActiveSheet.Visible = True
 
-'    CellQteAss = "$E$3" 'Cellule contenant la quantitÃ© d'assemblage
+'    CellQteAss = "$E$3" 'Cellule contenant la quantité d'assemblage
     LigActiveOrdo = 3
     LigActiveNom = 5
 
@@ -258,25 +260,20 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
     For Each oLignomOrdo In olignomCatias.Items
         pItem = pItem + 1
         mbarre.CalculProgression pEtape, pNbEt, pItem, pItems, "Ecriture des infos dans la nomenclature Catia"
-        'Test si c'est l'ensemble gÃ©nÃ©ral
+        'Test si c'est l'ensemble général
         If oLignomOrdo.Parent = "" Then
             ' Ecriture du nom de l'assemblage
             objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_nMachine).Value = olignomCatias.Item(1).Ref
             objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_Qte).Value = olignomCatias.Item(1).Qte
-            'Mise forme de la ligne de l'assemblage
-'            With objWBkOrdo.ActiveSheet.Range(CStr("A" & LigActiveOrdo & ":Q" & LigActiveOrdo))
-'                .Interior.Color = 15773696
-'                .Font.Color = -4165632
-'            End With
-            'Stockage de la cellule de la quantitÃ© de SSe a commander (pour ligne piece)
-            CellQteSSE = "$" & NumCar(Ord_QteStock) & "$" & LigActiveOrdo
+            'Stockage de la cellule de la quantité de SSe a commander (pour les lignes pieces de l'ensemble général)
+            'CellQteSSE = "$" & NumCar(Ord_Qte) & "$" & LigActiveOrdo
+            CellQteSSE = 1
             SSERef = oLignomOrdo.Ref
             LigActiveOrdo = LigActiveOrdo + 1
         Else
-        
             'test si c'est un Sous ensemble
-            'On se sert du parent de la ligne de nomenclature en cours pour Ã©crire la ligne de regroupement du sous ensemble
-            'La ligne de nomenclature de la piece ou du sous ensemnle en cours est Ã©crite dans le If suivant
+            'On se sert du parent de la ligne de nomenclature en cours pour écrire la ligne de regroupement du sous ensemble
+            'La ligne de nomenclature de la piece ou du sous ensemnle en cours est écrite dans le If suivant
             If SSERef <> oLignomOrdo.Parent Then 'Changment de sous ensemble
                 SSERef = oLignomOrdo.Parent
                 Set oAttributs = oLignomOrdo.Attributs
@@ -284,12 +281,11 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
                 Set oLignomsSEn = oLigSSens.Item(SSERef)
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_nSSE).Value = SSERef
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_Qte).Value = oLignomsSEn.Qte   'Qte du sous ensemble
-                'Formule de calcul de QtÃ© a commander
+                'Formule de calcul de Qté a commander
                 'FormuleSSE = "=IF((E" & LigActiveOrdo & "-K" & LigActiveOrdo & ")<0,0,E" & LigActiveOrdo & "-K" & LigActiveOrdo & ")"
                 FormuleSSE = "=IF((" & NumCar(Ord_Qte) & LigActiveOrdo & "-" & NumCar(Ord_QteStock) & LigActiveOrdo & ")<0,0," & NumCar(Ord_Qte) & LigActiveOrdo & "-" & NumCar(Ord_QteStock) & LigActiveOrdo & ")"
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_QteCmd).Formula = FormuleSSE
-                'Stockage de la cellule de la quantitÃ© de SSe a commander (pour ligne piece)
-                'CellQteSSE = "$L$" & LigActiveOrdo
+                'Stockage de la cellule de la quantité de SSe a commander (pour les lignes pieces des sous ensembles)
                 CellQteSSE = "$" & NumCar(Ord_QteCmd) & "$" & LigActiveOrdo
                 'Mise forme de la ligne du sous Ensemble
                 objWBkOrdo.ActiveSheet.Range(CStr("A" & LigActiveOrdo & ":U" & LigActiveOrdo)).Interior.Color = 16751052
@@ -302,15 +298,15 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
                 Set oAttributs = oLignomOrdo.Attributs
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_Repere).Value = oLignomOrdo.Ref   'Rep
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_Qte).Value = oLignomOrdo.Qte   'Qte
-                'Formule de calcul de QtÃ© a commander
+                'Formule de calcul de Qté a commander
                 Formulepiece = "=IF(((" & NumCar(Ord_Qte) & LigActiveOrdo & "*" & CellQteAss & "*" & CellQteSSE & ")-" & NumCar(Ord_QteStock) & LigActiveOrdo & ")<0,0,(" & NumCar(Ord_Qte) & LigActiveOrdo & "*" & CellQteAss & "*" & CellQteSSE & ")-" & NumCar(Ord_QteStock) & LigActiveOrdo & ")"
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_QteCmd).Formula = Formulepiece
                 objWBkOrdo.ActiveSheet.cells(LigActiveOrdo, Ord_Type).Value = FormatSource(oLignomOrdo.Source)  'Source
-                'Attributs spÃ©cifiques Ã  l'environnement
+                'Attributs spécifiques à l'environnement
                 If oAttributs.Count > 0 Then
                     PutNomOrdoAttributs oAttributs, objWBkOrdo, LigActiveOrdo
                 End If
-                'Traitement des spÃ©cificitÃ©s de l'environnement
+                'Traitement des spécificités de l'environnement
                 PutNomOrdoSpecif oAttributs, objWBkOrdo, LigActiveOrdo, pubNomEnv
                 LigActiveOrdo = LigActiveOrdo + 1
                 Set oAttributs = Nothing
@@ -320,10 +316,10 @@ Dim pEtape As Long, pNbEt As Long, pItem As Long, pItems As Long
 End Sub
 
 Private Sub PutNomOrdoAttributs(oAttributs As c_Attributs, objWBkOrdo, LigActiveOrdo As Long)
-'Ecrit la valeur des attributs spÃ©cifiques de l'environnement dans la nomenclature ordo
+'Ecrit la valeur des attributs spécifiques de l'environnement dans la nomenclature ordo
 'oAttributs = collection des attributs de la ligne de nomenclature en cours
 'objWBkOrdo = template excel ordo
-'LigActiveOrdo = NÂ° de la ligne en cours dans le fichier excel
+'LigActiveOrdo = N° de la ligne en cours dans le fichier excel
 Dim oattribut As c_Attribut
 
     For Each oattribut In pubAttributs.Items
@@ -335,10 +331,10 @@ Dim oattribut As c_Attribut
 End Sub
 
 Private Sub PutNomOrdoSpecif(oAttributs As c_Attributs, objWBkOrdo, LigActiveOrdo As Long, Env As String)
-'Traite les spÃ©cificitÃ©es de l'environnement dans la nomenclature ordo
+'Traite les spécificitées de l'environnement dans la nomenclature ordo
 'oAttributs = collection des attributs de la ligne de nomenclature en cours
 'objWBkOrdo = template excel ordo
-'LigActiveOrdo = NÂ° de la ligne en cours dans le fichier excel
+'LigActiveOrdo = N° de la ligne en cours dans le fichier excel
 'Env = Nom de l'environnement (Airbus, GSE, Snecma, etc...)
 Dim oattribut As c_Attribut
 
@@ -369,7 +365,7 @@ Set oLstSSE = New c_LNomencls
     LigActive = NoLigEntete - 1
     While LigActive < NoLigFinEns
         If TestEstSSE(objWBk.ActiveSheet.cells(LigActive, 1).Value) <> "False" Then
-            'force la quantitÃ© de l'ensemble gÃ©nÃ©ral Ã  1
+            'force la quantité de l'ensemble général à 1
             If LigActive = NoLigEntete - 1 Then QteRef = 1 Else QteRef = 0
             oLstSSE.Add suppZero(TestEstSSE(objWBk.ActiveSheet.cells(LigActive, 1).Value)), "E", QteRef
         End If
@@ -379,7 +375,7 @@ Set oLstSSE = New c_LNomencls
 End Function
 
 Private Function suppZero(str As String) As String
-'Supprime les zÃ©ros en tÃªte de la string
+'Supprime les zéros en tête de la string
     While Left(str, 1) = "0"
         str = Right(str, Len(str) - 1)
     Wend
@@ -387,8 +383,8 @@ Private Function suppZero(str As String) As String
 End Function
 
 Private Function CalculQte(NSSe As String, oLigNoms As c_LignomOrdos) As Integer
-'Fonction rÃ©cursive permettant de calculer la quantite d'un sous-ensemble
-'en fonction de la quantitÃ©s des sous ensembles dans lequel il est utilisÃ©
+'Fonction récursive permettant de calculer la quantite d'un sous-ensemble
+'en fonction de la quantités des sous ensembles dans lequel il est utilisé
 'NSSe = nom du sous ensemble dont on veux calculer la Qte
 'olignom = collection des sous ensembles avec leur qte et leur parent
 Dim oLignomSSE As c_LignomOrdo

@@ -1,5 +1,6 @@
+Attribute VB_Name = "Fonctions"
 Public Function CompIsactive(mprod As Product, nParent As String) As Boolean
-'VÃ©rifie si le produit (composant) passÃ© en argument est actif ou non
+'Vérifie si le produit (composant) passé en argument est actif ou non
 Dim mparams As Parameters
 Dim mparam As Parameter
 Dim ncomplet As String
@@ -14,7 +15,7 @@ Dim ncomplet As String
 End Function
 
 Public Function check_Env(Env As String) As Boolean
-'Check si l'environnement est conforme aux prÃ©requis de lancement des macros
+'Check si l'environnement est conforme aux prérequis de lancement des macros
 'Env = "Part", "Product"
 On Error Resume Next
 Dim mPart As PartDocument
@@ -45,7 +46,7 @@ Select Case Env
 End Function
 
 Public Function Check_PartProd(mdoc) As Boolean
-'VÃ©rifie si le document passÃ© en argument est un part ou un product
+'Vérifie si le document passé en argument est un part ou un product
 'sert a sauter les .ctcfg etc
 On Error Resume Next
 Dim mPart As PartDocument
@@ -66,18 +67,18 @@ Set mPart = mdoc
 End Function
 
 Public Sub CreateParamExist(mparams As Parameters, nParam As String, vParam As String)
-'test si le paramÃ¨tre passÃ© en argument existe dans le product.
+'test si le paramètre passé en argument existe dans le product.
 'si oui lui affecte la valeur vParam
-'sinon le crÃ©e et lui affecte la valeur vParam
-'mParams Collection des paramÃ¨tres du product
-'nParam Nom du paramÃ¨tre
-'vParam valeur du paramÃ¨tre
+'sinon le crée et lui affecte la valeur vParam
+'mParams Collection des paramètres du product
+'nParam Nom du paramètre
+'vParam valeur du paramètre
 
 Dim oParam As StrParam
 On Error Resume Next
     Set oParam = mparams.Item(nParam)
     If (err.Number <> 0) Then
-        ' Le paramÃ¨tre n'existe pas, on le crÃ©e
+        ' Le paramètre n'existe pas, on le crée
         err.Clear
         Set oParam = mparams.CreateString(nParam, vParam)
     Else
@@ -86,18 +87,18 @@ On Error Resume Next
 End Sub
 
 Public Sub CreateParam(mparams As Parameters, nParam As String, vParam As String)
-'test si le paramÃ¨tre passÃ© en argument existe dans le product.
-'sinon le crÃ©e et lui affecte la valeur vParam
+'test si le paramètre passé en argument existe dans le product.
+'sinon le crée et lui affecte la valeur vParam
 'si oui, ne fait rien
-'mParams Collection des paramÃ¨tres du product
-'nParam Nom du paramÃ¨tre
-'vParam valeur du paramÃ¨tre
+'mParams Collection des paramètres du product
+'nParam Nom du paramètre
+'vParam valeur du paramètre
 
 Dim oParam As StrParam
 On Error Resume Next
     Set oParam = mparams.Item(nParam)
     If (err.Number <> 0) Then
-        ' Le paramÃ¨tre n'existe pas, on le crÃ©e
+        ' Le paramètre n'existe pas, on le crée
         err.Clear
         Set oParam = mparams.CreateString(nParam, vParam)
     Else
@@ -105,13 +106,28 @@ On Error Resume Next
     End If
 End Sub
 
+Public Function FileExist(StrFile As String) As Boolean
+'Teste si le fichier existe et revois vrai ou faux
+'StrFile = nom du chemin complet jusqu'au répertoire a tester ex "c:\temp\test"
+Dim fs, f
+    Set fs = CreateObject("scripting.filesystemobject")
+    On Error Resume Next
+    Set f = fs.GetFile(StrFile)
+    If err.Number <> 0 Then
+        err.Clear
+        FileExist = False
+    Else
+        FileExist = True
+    End If
+End Function
+
 Public Function NoDebLstPieces(objWBk) As Long
-'recherche la 1ere ligne des attributs des piÃ¨ces
-' la ligne commence par "Liste des piÃ¨ces"
+'recherche la 1ere ligne des attributs des pièces
+' la ligne commence par "Liste des pièces"
     Dim NomSeparateur As String
     Dim NoLigne As Long
     NoLigne = 1
-    NomSeparateur = "Liste des piÃ¨ces"
+    NomSeparateur = "Liste des pièces"
     While Left(objWBk.ActiveSheet.cells(NoLigne, 1).Value, Len(NomSeparateur)) <> NomSeparateur
         NoLigne = NoLigne + 1
     Wend
@@ -120,7 +136,7 @@ Public Function NoDebLstPieces(objWBk) As Long
 End Function
 
 Public Function NoDebRecap(objWBk As Variant) As Long
-'recherche la 1ere ligne du rÃ©capitulatif des piÃ¨ces
+'recherche la 1ere ligne du récapitulatif des pièces
 ' la ligne commence par "Nomenclature de" ou "Recapitulation of:"
     Dim NomSeparateur As String
     Dim NoLigne As Integer
@@ -128,7 +144,7 @@ Public Function NoDebRecap(objWBk As Variant) As Long
     If Langue = "EN" Then
         NomSeparateur = "Recapitulation of:"
     ElseIf Langue = "FR" Then
-        NomSeparateur = "RÃ©capitulatif sur"
+        NomSeparateur = "Récapitulatif sur"
     End If
     While Left(objWBk.ActiveSheet.cells(NoLigne, 1).Value, Len(NomSeparateur)) <> NomSeparateur
         NoLigne = NoLigne + 1
@@ -137,7 +153,7 @@ Public Function NoDebRecap(objWBk As Variant) As Long
 End Function
 
 Public Function NoDerniereLigne(objWBk As Variant) As Long
-'recherche la derniÃ¨re ligne du fichier excel
+'recherche la dernière ligne du fichier excel
 'On part du principe que 2 lignes vide indiquent la fin du fichier
 Dim NoLigne As Integer, NbLigVide As Integer
     NoLigne = 1
@@ -153,8 +169,18 @@ Dim NoLigne As Integer, NbLigVide As Integer
     NoDerniereLigne = NoLigne - 2
 End Function
 
+Public Function SupZero(str As String) As String
+'supprime les zéros non significatif du partNumber
+'test si la string contien un nombre
+If IsNumeric(str) Then
+    SupZero = CDbl(str)
+Else
+    SupZero = str
+End If
+End Function
+
 Public Function TestEstSSE(Ligne As String) As String
-'test si la ligne correspond a une entÃ¨te de sous ensemble
+'test si la ligne correspond a une entète de sous ensemble
 ' la ligne commence par "Nomenclature de" ou "Bill of Material"
 Dim NomSeparateur As String
 Dim tmpNomSSE As String
@@ -164,7 +190,7 @@ Dim tmpNomSSE As String
     ElseIf Langue = "FR" Then
         NomSeparateur = "Nomenclature de "
     End If
-    On Error Resume Next 'Test si la chaine est vide ou infÃ©rieur a len(nomsÃ©parateur)
+    On Error Resume Next 'Test si la chaine est vide ou inférieur a len(nomséparateur)
     tmpNomSSE = Right(Ligne, Len(Ligne) - Len(NomSeparateur))
     If err.Number <> 0 Then
          TestEstSSE = "False"
@@ -178,45 +204,20 @@ Dim tmpNomSSE As String
 End Function
 
 Public Function TestParamExist(mparams As Parameters, nParam As String) As String
-'test si le paramÃ¨tre passÃ© en argument existe dans le part.
+'test si le paramètre passé en argument existe dans le part.
 'si oui renvoi sa valeur,
-'sinon la crÃ©e et lui affecte une chaine vide
+'sinon la crée et lui affecte une chaine vide
 Dim oParam As StrParam
 On Error Resume Next
     Set oParam = mparams.Item(nParam)
 If (err.Number <> 0) Then
-    ' Le paramÃ¨tre n'existe pas, on le crÃ©e
+    ' Le paramètre n'existe pas, on le crée
     err.Clear
     Set oParam = mparams.CreateString(nParam, "")
     oParam.Value = ""
 End If
 TestParamExist = oParam.Value
 End Function
-
-'Public Sub GetAttributs(nFile As String)
-''Collecte la liste des attributs dans le fichier text
-''les stocke dans la collection public pubAttributs
-''nFile = chemin + non du fichier des attributs
-'Dim fs, f
-'Dim oAttribut As c_Attribut
-'
-'    Set oAttribut = New c_Attribut
-'    If nFile <> "" Then
-'        'Ouverture du fichier de paramÃ¨tres
-'        Set fs = CreateObject("Scripting.FileSystemObject")
-'        Set f = fs.opentextfile(nFile, ForReading, 1)
-'        Do While Not f.AtEndOfStream
-'            oAttribut.Nom = f.ReadLine
-'            oAttribut.Valeur = ""
-'            pubAttributs.Add oAttribut.Nom, Nbre_Param, oAttribut.Valeur
-'        Loop
-'    End If
-'
-''LibÃ©ration des classes
-'Set oAttribut = Nothing
-'Set f = Nothing
-'Set fs = Nothing
-'End Sub
 
 Public Sub GetAttributs(nFile As String)
 'Collecte la liste des attributs dans le fichier text
@@ -230,32 +231,37 @@ On Error GoTo erreur:
     Set pubAttributs = New c_Attributs
     Set oattribut = New c_Attribut
     If nFile <> "" Then
-        'Ouverture du fichier de paramÃ¨tres
+        'Ouverture du fichier de paramètres
         Set fs = CreateObject("Scripting.FileSystemObject")
-        Set f = fs.opentextfile(nFile, ForReading, 1)
-        'lecture du nom de l'environnement
-        pubNomEnv = SplitSemicolon(f.ReadLine, 2)
-        'Lecture su nom du template ordo
-        pubNomTemplateOrdo = SplitSemicolon(f.ReadLine, 2)
-        'lecture des paramÃ¨tres
-        Do While Not f.AtEndOfStream
-            Linestr = f.ReadLine
-            If SplitSemicolon(Linestr, 1) = "Attrib" Then
-                oattribut.Nom = SplitSemicolon(Linestr, 2)
-                'oattribut.Valeur = SplitSemicolon(Linestr, 3)
-                On Error GoTo erreur:
-                oattribut.Ordre = CInt(SplitSemicolon(Linestr, 3))
-                pubAttributs.Add oattribut.Nom, oattribut.Ordre, oattribut.Valeur
-            End If
-        Loop
+        'teste si le fichier existe
+        If FileExist(nFile) Then
+            Set f = fs.opentextfile(nFile, ForReading, 1)
+            'lecture du nom de l'environnement
+            pubNomEnv = SplitSemicolon(f.ReadLine, 2)
+            'Lecture su nom du template ordo
+            pubNomTemplateOrdo = SplitSemicolon(f.ReadLine, 2)
+            'lecture des paramètres
+            Do While Not f.AtEndOfStream
+                Linestr = f.ReadLine
+                If SplitSemicolon(Linestr, 1) = "Attrib" Then
+                    oattribut.Nom = SplitSemicolon(Linestr, 2)
+                    'oattribut.Valeur = SplitSemicolon(Linestr, 3)
+                    On Error GoTo erreur:
+                    oattribut.Ordre = CInt(SplitSemicolon(Linestr, 3))
+                    pubAttributs.Add oattribut.Nom, oattribut.Ordre, oattribut.Valeur
+                End If
+            Loop
+        Else
+            MsgBox "Le fichier d'attributs défini dans vos préférences " & Chr(10) & "(" & nFile & ")" & Chr(10) & " est introuvable. sélectionnez un autre fichier.", vbInformation
+        End If
     End If
     GoTo fin:
     
 erreur:
-    MsgBox " Une erreur a Ã©tÃ© dÃ©tectÃ©e dans le fichier des attributs : " & nFile, vbCritical, "Erreur dans fichier attributs"
+    MsgBox " Une erreur a été détectée dans le fichier des attributs : " & nFile, vbCritical, "Erreur dans fichier attributs"
     
 fin:
-'LibÃ©ration des classes
+'Libération des classes
 Set oattribut = Nothing
 Set f = Nothing
 Set fs = Nothing
@@ -268,12 +274,18 @@ Public Sub InitLanguage()
     If Langue = "EN" Then
         nQt = "Quantity"
         nRef = "Part Number"
+        nRev = "Revision"
+        nDef = "Definition"
+        nNom = "Nomenclature"
         nDesc = "Product Description"
         nSrce = "Source"
         nParamActivate = "Component Activation State"
     Else
-        nQt = "QuantitÃ©"
-        nRef = "RÃ©fÃ©rence"
+        nQt = "Quantité"
+        nRef = "Référence"
+        nRev = "Révision"
+        nDef = "Définition"
+        nNom = "Nomenclature"
         nDesc = "Description du produit"
         nSrce = "Source"
         nParamActivate = "Etat d'activation du composant"
@@ -281,7 +293,7 @@ Public Sub InitLanguage()
 End Sub
 
 Public Function Language() As String
-'DÃ©tecte la langue de l'interface Catia
+'Détecte la langue de l'interface Catia
 'Ouvre un part vierge et test le nom du "Main Body"
 Dim ofile, oFolder, ofs
 Dim EmptyPartFolder, EmptyPartFile
@@ -290,7 +302,7 @@ Dim oEmptyPart  As PartDocument
 On Error Resume Next
 Set ofs = CreateObject("Scripting.FileSystemObject")
 Set oFolder = ofs.GetFolder(CATIA.Parent.Path)
-Set EmptyPartFolder = ofs.GetFolder(oFolder.ParentFolder.ParentFolder.Path & "\startup\templates") ' dossier relatif des modÃ¨les vides
+Set EmptyPartFolder = ofs.GetFolder(oFolder.ParentFolder.ParentFolder.Path & "\startup\templates") ' dossier relatif des modèles vides
 Set EmptyPartFile = ofs.GetFile(EmptyPartFolder.Path & "\empty.CATPart")
 
 If err.Number = 0 Then
@@ -355,7 +367,7 @@ End Sub
 
 Function ReturnUserName() As String 'extrait d'un code de Paul, Dave Peterson Exelabo
 'Renvoi le user name de l'utilisateur de la station
-'fonctionne avec la fonction GetUserName dans l'entÃ¨te de dÃ©claration
+'fonctionne avec la fonction GetUserName dans l'entète de déclaration
     Dim Buffer As String * 256
     Dim BuffLen As Long
     BuffLen = 256
@@ -364,8 +376,8 @@ Function ReturnUserName() As String 'extrait d'un code de Paul, Dave Peterson Ex
 End Function
 
 Public Function EffaceFicNom(nfold As String, nFic As String) As Boolean
-'Effacement d'un fichier de nomenclature prÃ©-existant
-'nfold = nom du rÃ©pertoire
+'Effacement d'un fichier de nomenclature pré-existant
+'nfold = nom du répertoire
 'nFic = nom du fichier
 
  On Error GoTo Err_EffaceFicNom
@@ -388,16 +400,30 @@ Quit_EffaceFicNom:
 End Function
 
 Public Function FormatSource(str As String) As String
-'format le contenu du champs source
-'remplace "Inconu" par une chaine vide.
+'formate le contenu du champs source
+'remplace "Inconu" ou "Unknown" par une chaine vide.
+'remplace les codes champs sources par une string
 FormatSource = str
 Select Case str
     Case "Inconnu", "Unknown"
         FormatSource = ""
-    Case "Bought"
-        FormatSource = "AchetÃ©"
-    Case "Made"
-        FormatSource = "FabriquÃ©"
+    Case "Bought", catProductBought
+        FormatSource = "Acheté"
+    Case "Made", catProductMade
+        FormatSource = "Fabriqué"
+End Select
+End Function
+
+Public Function ReverseSource(str As String) As CatProductSource
+'Renvoi le code champs source
+'remplace "Acheté" par catProductBought
+' et "Fabriqué" par catProductMade
+ReverseSource = catProductSourceUnknown
+Select Case str
+    Case "Acheté"
+        ReverseSource = catProductBought
+    Case "Fabriqué"
+        ReverseSource = catProductMade
 End Select
 End Function
 
@@ -416,7 +442,7 @@ Dim i As Long
 End Function
 
 Public Function RestPref() As String
-'Restaure les prÃ©fÃ©rences a partir d'un fichier texte dans c:\temp
+'Restaure les préférences a partir d'un fichier texte dans c:\temp
 Dim fs, f
 Dim LigTxt As String, Rlig As String, Llig As String
 Dim pos As Integer
@@ -451,7 +477,7 @@ Dim fs, f
 End Sub
 
 Public Function SplitSlash(str As String) As String
-'RecupÃ¨re la partie finale d'une string apres le dernier "\"
+'Recupère la partie finale d'une string apres le dernier "\"
 Do While InStr(1, str, "\", vbTextCompare) > 0
     str = Right(str, Len(str) - InStr(1, str, "\", vbTextCompare))
 Loop
@@ -459,7 +485,7 @@ SplitSlash = str
 End Function
 
 Public Function SplitSemicolon(ByVal str As String, pos As Integer) As String
-'Renvois la nieme partie d'une string sÃ©parÃ©e par des ";"
+'Renvois la nieme partie d'une string séparée par des ";"
 Dim SplitStr() As String
 Dim i As Integer
 On Error GoTo erreur:
@@ -497,7 +523,7 @@ Dim tmpNomSSE As String
     ElseIf Langue = "FR" Then
         NomSeparateur = "Nomenclature de "
     End If
-    On Error Resume Next 'Test si la chaine est vide ou infÃ©rieur a len(nomsÃ©parateur)
+    On Error Resume Next 'Test si la chaine est vide ou inférieur a len(nomséparateur)
     NomENS = Right(Ligne, Len(Ligne) - Len(NomSeparateur))
     If err.Number <> 0 Then
          NomENS = ""
@@ -507,7 +533,7 @@ End Function
 Public Function NumCar(Num As Integer) As String
 'Converti un chiffre en lettre
 '1 = A, 2 = B etc
-'Attention la numÃ©rotation de Array commence Ã  0 d'ou le double A dans la liste
+'Attention la numérotation de Array commence à 0 d'ou le double A dans la liste
 Dim ListCar
 If Num > 78 Then ' a changer si on ajoute des colonnes a la liste Array
     Num = 1

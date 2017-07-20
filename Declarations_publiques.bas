@@ -1,13 +1,14 @@
-'Fonction de rÃ©cupÃ©ration du username
+Attribute VB_Name = "Declarations_publiques"
+'Fonction de récupération du username
 Public Declare Function GetUserName Lib "advapi32.dll" Alias "GetUserNameA" (ByVal lpBuffer As String, nSize As Long) As Long
 
 'Version de la macro
-Public Const VMacro As String = "Version 4.6.3 du 14/12/16"
+Public Const VMacro As String = "Version 4.6.7 du 21/03/17"
 Public Const nMacro As String = "Ajout_Proprietes"
 Public Const nPath As String = "\\srvxsiordo\xLogs\01_CatiaMacros"
 Public Const nFicLog As String = "logUtilMacro.txt"
 
-'Nom du fichier de sauvgarde des prÃ©ferences
+'Nom du fichier de sauvgarde des préferences
 Public Const nFicPref As String = "C:\temp\PrefMacroAjoutProprietes.txt"
 
 Public Nbre_Param As Integer
@@ -16,7 +17,7 @@ Public Langue As String
 
 Public Const ForReading As Integer = 1
 
-Public pubAttributs As c_Attributs 'Collection des attributs collectÃ©es dans le fichier texte
+Public pubAttributs As c_Attributs 'Collection des attributs collectées dans le fichier texte
 Public pubNomEnv As String          'Nom de l'environnement
 Public pubPathEnv As String         'Chemin + nom du fichier des attributs de l'environnement
 Public pubNomTemplateOrdo As String
@@ -28,27 +29,27 @@ Public oProduits As c_Products
 Public Const MaxAttributs As Integer = 20
 
 'Variable fichier excel
-Public nNomCatia As String      'Nom du fichier de la nomenclature gÃ©nÃ©rÃ©e par Catia
-Public cibleNomCatia As String      'Chemin + nom du fichier de nomenclature gÃ©nÃ©rÃ©e par Catia
-Public Const nExtNomCatia As String = "-NomCatia"    'Extention ajoutÃ©e au fichier excel nomenclature gÃ©nÃ©rÃ©e par Catia
-Public Const nSheetExtractCatia As String = "ExtractCatia" 'Nom de l'onglet "Feuile.1" dans le fichier de nomenclature gÃ©nÃ©rÃ©e par Catia
+Public nNomCatia As String      'Nom du fichier de la nomenclature générée par Catia
+Public cibleNomCatia As String      'Chemin + nom du fichier de nomenclature générée par Catia
+Public Const nExtNomCatia As String = "-NomCatia"    'Extention ajoutée au fichier excel nomenclature générée par Catia
+Public Const nSheetExtractCatia As String = "ExtractCatia" 'Nom de l'onglet "Feuile.1" dans le fichier de nomenclature générée par Catia
 
-Public nNomProp As String       'Nom du fichier excel de la nomenclature des propriÃ©tÃ©s modifiables
-Public cibleNomProp As String   'Chemin + nom du fichier excel de la nomenclature des propriÃ©tÃ©s modifiables
-Public Const nExtNomProp As String = "-Proprietes"     'Extention ajoutÃ©e au fichier excel des propriÃ©tÃ©s modifiables
-Public Const nSheetReacp As String = "Recapitulatif"        'Nom de l'onglet "Recapitulatif" dans le fichier des propriÃ¨tÃ¨es modifiables
+Public nNomProp As String       'Nom du fichier excel de la nomenclature des propriétés modifiables
+Public cibleNomProp As String   'Chemin + nom du fichier excel de la nomenclature des propriétés modifiables
+Public Const nExtNomProp As String = "-Proprietes"     'Extention ajoutée au fichier excel des propriétés modifiables
+Public Const nSheetReacp As String = "Recapitulatif"        'Nom de l'onglet "Recapitulatif" dans le fichier des propriètèes modifiables
 
 
 Public cibleNomOrdo As String   'Chemin + nom du template de la nomenclature excel Ordo
 
-Public CheminSourcesMacro As String         'Chemin dans lequel est lancÃ© la macro
+Public CheminSourcesMacro As String         'Chemin dans lequel est lancé la macro
 
-'Position des Ã©lÃ©ments dans le fichier excel de nomenclature Catia
-Public NoLigEntete As Long 'NÂ° de la ligne des entÃ¨te d'attributs dans le fichier eXcel
-Public NoLigFinNom As Long 'NÂ° de la ligne de fin de la nomenclature
-Public NoLigFinEns As Long 'NÂ° de la ligne de fin des ensembles
-Public NoLigDebDet As Long 'NÂ° de la ligne de dÃ©but des piÃ¨ces
-Public NoLigDebSSE As Long 'NÂ° de la ligne de dÃ©but des ensembles
+'Position des éléments dans le fichier excel de nomenclature Catia
+Public NoLigEntete As Long 'N° de la ligne des entète d'attributs dans le fichier eXcel
+Public NoLigFinNom As Long 'N° de la ligne de fin de la nomenclature
+Public NoLigFinEns As Long 'N° de la ligne de fin des ensembles
+Public NoLigDebDet As Long 'N° de la ligne de début des pièces
+Public NoLigDebSSE As Long 'N° de la ligne de début des ensembles
 
 'Position des colonnes dans la nomenclature Ordo
 Public Ord_nMachine As Integer
@@ -69,23 +70,28 @@ Public Ord_Type As Integer
 Public Ord_Traitmnt As Integer
 Public CellQteAss As String
 
-'Nom des champs de nomenclature (franÃ§ais/Anglais)
+'Nom des champs de nomenclature (français/Anglais)
 Public nQt As String
 Public nRef As String
+Public nRev As String
+Public nDef As String
+Public nNom As String
 Public nDesc As String
 Public nSrce As String
 
-'Nom des paramÃ¨tres (franÃ§ais/Anglais
+'Nom des paramètres (français/Anglais
 Public nParamActivate As String
 
-'Nombre de paramÃ¨tres de base dans les nomenclatures (Qte, Refence, Source)
-'Les paramÃ¨tre particulier de l'environnement dÃ©bute apres
-Public Const NbColPrmStd As Integer = 3
+'Nombre de paramètres de base dans les nomenclatures (Qte, Reference, Révision, Definition, Nomenclature, source et product description)
+'Les paramètre particuliers de l'environnement débute apres
+Public Const NbColPrmStd As Integer = 7
+'Nombre de paramètres non modifiables (Qte, Reference)
+Public Const NbColPrmNomModif As Integer = 2
 
 Public oLigSSens As c_LNomencls
 
 Public Sub IniColTemplateOrdo(NomTemplate As String)
-'ParamÃ¨tre la position des colonnes du template Ordo en fonction du template choisi
+'Paramètre la position des colonnes du template Ordo en fonction du template choisi
 
     Select Case NomTemplate
         Case "NomOrdostd"
@@ -105,8 +111,8 @@ Public Sub IniColTemplateOrdo(NomTemplate As String)
             Ord_QteCmd = 12
             Ord_Type = 13
             Ord_Traitmnt = 17
-            'Position des colonnes permettant les calcul de quantitÃ©
-            CellQteAss = "$E$3" 'Cellule contenant la quantitÃ© d'assemblage
+            'Position des colonnes permettant les calcul de quantité
+            CellQteAss = "$E$3" 'Cellule contenant la quantité d'assemblage
         Case "NomOrdX3"
             pubNomTemplateOrdo = "FML-Trame de nomenclature-05.xls"
             'Position des colonnes
@@ -126,8 +132,8 @@ Public Sub IniColTemplateOrdo(NomTemplate As String)
             Ord_QteCmd = 14
             Ord_Type = 15
             Ord_Traitmnt = 19
-            'Position des colonnes permettant les calcul de quantitÃ©
-            CellQteAss = "$F$3" 'Cellule contenant la quantitÃ© d'assemblage
+            'Position des colonnes permettant les calcul de quantité
+            CellQteAss = "$F$3" 'Cellule contenant la quantité d'assemblage
             
     End Select
     

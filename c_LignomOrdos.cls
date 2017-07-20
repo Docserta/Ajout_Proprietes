@@ -1,5 +1,14 @@
-'c_LNomencls
-'Collection des lignes de nomenclature
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "c_LignomOrdos"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+'c_LignomOrdos
+'Collection des lignes de nomenclature ordo
 
 Private mcol As Collection
 
@@ -9,10 +18,10 @@ Public Function Add(Ref As String, _
             Optional Source As String = "", _
             Optional Desc As String = "", _
             Optional Attributs As c_Attributs = Nothing, _
-            Optional Parent As String) As c_LNomencl
+            Optional Parent As String = "") As c_LignomOrdo
     
-    Dim objNewMember As c_LNomencl
-    Set objNewMember = New c_LNomencl
+    Dim objNewMember As c_LignomOrdo
+    Set objNewMember = New c_LignomOrdo
     
     objNewMember.Ref = Ref
     objNewMember.Comp = Comp
@@ -22,14 +31,14 @@ Public Function Add(Ref As String, _
     objNewMember.Attributs = Attributs
     objNewMember.Parent = Parent
 
-    mcol.Add objNewMember, Ref
+    mcol.Add objNewMember
 
     Set Add = objNewMember
     Set objNewMember = Nothing
 
 End Function
 
-Public Property Get Item(vntIndexKey As Variant) As c_LNomencl
+Public Property Get Item(vntIndexKey As Variant) As c_LignomOrdo
   Set Item = mcol(vntIndexKey)
 End Property
 
@@ -52,6 +61,8 @@ End Sub
 Private Sub Class_Terminate()
     Set mcol = Nothing
 End Sub
+
+
 
 
 
